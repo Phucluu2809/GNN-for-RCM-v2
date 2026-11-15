@@ -1,0 +1,21 @@
+{
+  "data_dir": "data",
+  "jobs_file": "jobs (1).csv",
+  "output_dir": "artifacts/prepared",
+  "train_fraction": 0.7,
+  "validation_fraction": 0.15,
+  "feature_dim": 32,
+  "graph_level": "G1",
+  "use_llm": false,
+  "hidden": 8,
+  "layers": 1,
+  "heads": 2,
+  "dropout": 0.0,
+  "learning_rate": 0.001,
+  "epochs": 1,
+  "patience": 1,
+  "negatives": 1,
+  "supervision_fraction": 0.2,
+  "edge_retention": 0.05,
+  "seed": 42
+}

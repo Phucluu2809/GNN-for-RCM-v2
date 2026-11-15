@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jobrec-gnn"
+version = "0.1.0"
+description = "Leakage-aware JTH job recommendation research pipeline"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+train = ["torch>=2.4,<3", "torch-geometric>=2.6,<3"]
+demo = ["streamlit>=1.40,<2"]
+baseline = ["scikit-learn>=1.5,<2"]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+jobrec = "jobrec.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

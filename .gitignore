@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.deps/
+artifacts/
+reports/
+data/processed/
+*.egg-info/
+build/
+dist/
+jobrec_colab_result.zip
+jobrec_colab.zip
+data/
