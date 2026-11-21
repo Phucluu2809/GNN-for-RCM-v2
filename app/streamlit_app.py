@@ -9,8 +9,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from jobrec.data import read_json
-from jobrec.features import GROUPS, attributes, compatibility, tokens
+from jobrec.features import GROUPS, attributes, compatibility, normalize_location, tokens
 from jobrec.inference import Predictor
+from vietnam_ui import render_vietnam
 
 
 st.set_page_config(page_title="JobMatch | Tìm việc thông minh", page_icon="💼", layout="wide", initial_sidebar_state="expanded")
@@ -20,17 +21,24 @@ LABELS = {
     "location": "Địa điểm", "salary": "Mức lương", "education": "Học vấn",
 }
 
+FRENCH_DEPARTMENTS = {
+    "01": "Ain", "02": "Aisne", "03": "Allier", "04": "Alpes-de-Haute-Provence", "05": "Hautes-Alpes", "06": "Alpes-Maritimes", "07": "Ardèche", "08": "Ardennes", "09": "Ariège", "10": "Aube", "11": "Aude", "12": "Aveyron", "13": "Bouches-du-Rhône", "14": "Calvados", "15": "Cantal", "16": "Charente", "17": "Charente-Maritime", "18": "Cher", "19": "Corrèze", "21": "Côte-d'Or", "22": "Côtes-d'Armor", "23": "Creuse", "24": "Dordogne", "25": "Doubs", "26": "Drôme", "27": "Eure", "28": "Eure-et-Loir", "29": "Finistère", "30": "Gard", "31": "Haute-Garonne", "32": "Gers", "33": "Gironde", "34": "Hérault", "35": "Ille-et-Vilaine", "36": "Indre", "37": "Indre-et-Loire", "38": "Isère", "39": "Jura", "40": "Landes", "41": "Loir-et-Cher", "42": "Loire", "43": "Haute-Loire", "44": "Loire-Atlantique", "45": "Loiret", "46": "Lot", "47": "Lot-et-Garonne", "48": "Lozère", "49": "Maine-et-Loire", "50": "Manche", "51": "Marne", "52": "Haute-Marne", "53": "Mayenne", "54": "Meurthe-et-Moselle", "55": "Meuse", "56": "Morbihan", "57": "Moselle", "58": "Nièvre", "59": "Nord", "60": "Oise", "61": "Orne", "62": "Pas-de-Calais", "63": "Puy-de-Dôme", "64": "Pyrénées-Atlantiques", "65": "Hautes-Pyrénées", "66": "Pyrénées-Orientales", "67": "Bas-Rhin", "68": "Haut-Rhin", "69": "Rhône", "70": "Haute-Saône", "71": "Saône-et-Loire", "72": "Sarthe", "73": "Savoie", "74": "Haute-Savoie", "75": "Paris", "76": "Seine-Maritime", "77": "Seine-et-Marne", "78": "Yvelines", "79": "Deux-Sèvres", "80": "Somme", "81": "Tarn", "82": "Tarn-et-Garonne", "83": "Var", "84": "Vaucluse", "85": "Vendée", "86": "Vienne", "87": "Haute-Vienne", "88": "Vosges", "89": "Yonne", "90": "Territoire de Belfort", "91": "Essonne", "92": "Hauts-de-Seine", "93": "Seine-Saint-Denis", "94": "Val-de-Marne", "95": "Val-d'Oise", "97": "Outre-mer",
+}
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
 :root { --ink:#15213a; --navy:#101b35; --blue:#2962d6; --mint:#1ea97a; --line:#e7ebf2; }
 .stApp {background:#f6f8fc;color:var(--ink);font-family:'DM Sans',sans-serif}
-.block-container {max-width:1440px;padding:1.5rem 3.4rem 3rem}
+.block-container {max-width:1440px;padding:2.65rem 3.4rem 3rem}
 [data-testid="stSidebar"] {background:linear-gradient(180deg,#0d1830 0%,#132748 100%)}
 [data-testid="stSidebar"] * {color:#eff5ff!important}
 [data-testid="stSidebar"] input,[data-testid="stSidebar"] select {background:#fff!important;color:#15213a!important}
 [data-testid="stSidebar"] [data-baseweb="select"] span {color:#15213a!important}
+[data-testid="stSidebar"] [data-testid="stExpander"] {background:#142441!important;border:1px solid #395072!important;border-radius:10px!important}
+[data-testid="stSidebar"] [data-testid="stExpander"] summary {background:#142441!important}
 [data-testid="stSidebar"] .stButton button {background:#2f6ce5!important;border:0!important;color:white!important;font-weight:700}
+[data-testid="stSidebar"] .warning-note,[data-testid="stSidebar"] .warning-note * {background:#1a3158!important;border-color:#3d6092!important;color:#eaf2ff!important}
 h1,h2,h3 {font-family:'Manrope',sans-serif!important;letter-spacing:-.035em;color:#14203a!important}
 .brand {font:800 22px 'Manrope';color:#fff;margin:2px 0 2px}.brand-sub{color:#aebddb;font-size:12px;margin-bottom:22px}
 .topbar {display:flex;align-items:center;justify-content:space-between;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid var(--line)}
@@ -41,9 +49,31 @@ h1,h2,h3 {font-family:'Manrope',sans-serif!important;letter-spacing:-.035em;colo
 </style>
 """, unsafe_allow_html=True)
 
+# Vietnam is the actual product-facing catalogue.  The JTH view is retained only
+# as the research demonstration because its graph/checkpoint was trained on France.
+data_mode = st.sidebar.radio(
+    "Nguồn dữ liệu / chế độ",
+    ["🇻🇳 Việc làm Việt Nam", "🧪 Nghiên cứu GNN JTH (Pháp)"],
+    index=0,
+)
+if data_mode == "🇻🇳 Việc làm Việt Nam":
+    render_vietnam()
+    st.stop()
+
 
 def clean_text(value):
     return str(value or "").strip()
+
+
+def location_code(value):
+    return normalize_location(value) or ""
+
+
+def location_label(value):
+    code = location_code(value)
+    if not code:
+        return "Địa điểm chưa nêu"
+    return f"{FRENCH_DEPARTMENTS.get(code, 'Khu vực')} ({code})"
 
 
 def job_title(row):
@@ -138,7 +168,8 @@ profile_override = st.session_state.profile_overrides.get(candidate_id, {})
 candidate = {**base_candidate, **profile_override}
 
 st.sidebar.markdown("---")
-st.sidebar.markdown(f"**Danh sách quan tâm**  \\n+{len(st.session_state.saved_jobs)} việc đã lưu")
+st.sidebar.markdown("**Danh sách quan tâm**")
+st.sidebar.caption(f"{len(st.session_state.saved_jobs)} việc đã lưu")
 if st.session_state.saved_jobs and st.sidebar.button("Xóa việc đã lưu", use_container_width=True):
     st.session_state.saved_jobs = []
     st.rerun()
@@ -151,7 +182,7 @@ st.markdown("""
 
 profile_weights = st.session_state.get("profile_weights", [0.80, 0.55, 0.60, 0.45, 0.0, 0.25])
 all_jobs = predictor.context["jobs"]
-locations = sorted({clean_text(row.get("zipcode")) for row in all_jobs.values() if clean_text(row.get("zipcode"))})
+locations = sorted({location_code(row.get("zipcode")) for row in all_jobs.values() if location_code(row.get("zipcode"))})
 contracts = sorted({clean_text(row.get("contract_type")) for row in all_jobs.values() if clean_text(row.get("contract_type"))})
 categories = sorted({clean_text(row.get("job_category")) for row in all_jobs.values() if clean_text(row.get("job_category"))})
 popular_skills = [name for name, _ in Counter(skill for row in all_jobs.values() for skill in tokens(row.get("skills"))).most_common(80)]
@@ -161,7 +192,7 @@ search_a, search_b, search_c, search_d = st.columns([3.2, 1.35, 1.35, 1.1])
 with search_a:
     query = st.text_input("Tìm theo vị trí, kỹ năng hoặc lĩnh vực", placeholder="Ví dụ: devops, python, cloud infrastructure", label_visibility="collapsed")
 with search_b:
-    location_filter = st.selectbox("Địa điểm", ["Tất cả địa điểm"] + locations, label_visibility="collapsed")
+    location_filter = st.selectbox("Địa điểm", ["Tất cả địa điểm"] + locations, format_func=lambda value: value if value == "Tất cả địa điểm" else location_label(value), label_visibility="collapsed")
 with search_c:
     contract_filter = st.selectbox("Hình thức", ["Tất cả hình thức"] + contracts, label_visibility="collapsed")
 with search_d:
@@ -189,7 +220,7 @@ def matches_filters(item):
     haystack = " ".join([job_title(row), clean_text(row.get("expertise_area")), clean_text(row.get("skills")), clean_text(row.get("contract_type"))]).lower()
     if query.strip() and query.lower().strip() not in haystack:
         return False
-    if location_filter != "Tất cả địa điểm" and clean_text(row.get("zipcode")) != location_filter:
+    if location_filter != "Tất cả địa điểm" and location_code(row.get("zipcode")) != location_filter:
         return False
     if contract_filter != "Tất cả hình thức" and clean_text(row.get("contract_type")) != contract_filter:
         return False
@@ -224,7 +255,7 @@ with tab_jobs:
         a, b = st.columns([8, 1.5])
         with a:
             st.markdown(f"<div class='job-title'><span class='rank'>{rank}</span>&nbsp; {job_title(row).title()}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='job-meta'>📍 {clean_text(row.get('zipcode')) or 'Chưa rõ'} &nbsp; · &nbsp; 💼 {clean_text(row.get('contract_type')) or 'Linh hoạt'} &nbsp; · &nbsp; ⏳ {clean_text(row.get('years_experience')) or 'Không nêu'} &nbsp; · &nbsp; 🗓 {clean_text(row.get('create_date')) or '—'}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='job-meta'>📍 {location_label(row.get('zipcode'))} &nbsp; · &nbsp; 💼 {clean_text(row.get('contract_type')) or 'Linh hoạt'} &nbsp; · &nbsp; ⏳ {clean_text(row.get('years_experience')) or 'Không nêu'} &nbsp; · &nbsp; 🗓 {clean_text(row.get('create_date')) or '—'}</div>", unsafe_allow_html=True)
             st.markdown("".join(f"<span class='chip'>{skill}</span>" for skill in skill_list(row)), unsafe_allow_html=True)
             st.markdown(f"<div class='reason'>✦ {recommendation_reason(candidate, row, predictor.state)}</div>", unsafe_allow_html=True)
         with b:
@@ -239,9 +270,12 @@ with tab_jobs:
         with st.expander("Xem chi tiết & cách mô hình đánh giá"):
             st.markdown("<div class='detail-box'>", unsafe_allow_html=True)
             details_a, details_b, details_c = st.columns(3)
-            details_a.write("**Lĩnh vực**", clean_text(row.get("expertise_area")) or "Chưa nêu")
-            details_b.write("**Yêu cầu học vấn**", clean_text(row.get("llm_required_lowest_diploma")) or "Chưa nêu")
-            details_c.write("**Mức độ senior**", clean_text(row.get("llm_seniority_level")) or "Chưa nêu")
+            details_a.markdown("**Lĩnh vực**")
+            details_a.caption(clean_text(row.get("expertise_area")) or "Chưa nêu")
+            details_b.markdown("**Yêu cầu học vấn**")
+            details_b.caption(clean_text(row.get("llm_required_lowest_diploma")) or "Chưa nêu")
+            details_c.markdown("**Mức độ senior**")
+            details_c.caption(clean_text(row.get("llm_seniority_level")) or "Chưa nêu")
             values, mask = compatibility(candidate, row, predictor.state)
             relation_table = [{"Quan hệ": LABELS[group], "Khả dụng": "Có" if has_value else "Thiếu dữ liệu", "Độ khớp": f"{value:.0%}" if has_value else "—"} for group, value, has_value in zip(GROUPS, values, mask)]
             st.dataframe(relation_table, hide_index=True, use_container_width=True)
@@ -258,7 +292,7 @@ with tab_saved:
             col_a, col_b = st.columns([8, 1])
             with col_a:
                 st.markdown(f"### {job_title(row).title()}")
-                st.caption(f"📍 {clean_text(row.get('zipcode')) or 'Chưa rõ'} · {display_salary(row)} · {clean_text(row.get('contract_type')) or 'Linh hoạt'}")
+                st.caption(f"📍 {location_label(row.get('zipcode'))} · {display_salary(row)} · {clean_text(row.get('contract_type')) or 'Linh hoạt'}")
                 st.markdown("".join(f"<span class='chip chip-green'>{skill}</span>" for skill in skill_list(row)), unsafe_allow_html=True)
             with col_b:
                 if st.button("Bỏ lưu", key=f"remove_{identifier}", use_container_width=True):
@@ -282,10 +316,10 @@ with tab_profile:
         with right:
             experience_options = ["Chưa có kinh nghiệm", "Dưới 1 năm", "1–2 năm", "3–5 năm", "Trên 5 năm"]
             selected_experience = st.selectbox("Kinh nghiệm", experience_options)
-            current_location = clean_text(candidate.get("zipcode"))
+            current_location = location_code(candidate.get("zipcode"))
             location_options = ["Không giới hạn"] + locations
             location_default = location_options.index(current_location) if current_location in location_options else 0
-            selected_location = st.selectbox("Khu vực làm việc", location_options, index=location_default)
+            selected_location = st.selectbox("Khu vực làm việc", location_options, index=location_default, format_func=lambda value: value if value == "Không giới hạn" else location_label(value))
             selected_education = st.text_input("Trình độ học vấn", value=clean_text(candidate.get("llm_highest_diploma")), placeholder="Ví dụ: Bachelor")
         st.markdown("**Mức ưu tiên khi xếp hạng lại**")
         weights_cols = st.columns(6)
@@ -314,9 +348,13 @@ with tab_profile:
             st.rerun()
     st.markdown("<div class='section-label'>Tóm tắt hồ sơ đang dùng</div>", unsafe_allow_html=True)
     summary_cols = st.columns(3)
-    summary_cols[0].write("**Kỹ năng**", clean_text(candidate.get("skills")) or "Chưa có dữ liệu")
-    summary_cols[1].write("**Mục tiêu nghề nghiệp**", clean_text(candidate.get("job_category")) or "Chưa có dữ liệu")
-    summary_cols[2].write("**Khu vực / kinh nghiệm**", f"{clean_text(candidate.get('zipcode')) or 'Không giới hạn'} · {clean_text(candidate.get('years_experience')) or 'Chưa nêu'}")
+    summary_cols[0].markdown("**Kỹ năng**")
+    summary_cols[0].caption(clean_text(candidate.get("skills")) or "Chưa có dữ liệu")
+    summary_cols[1].markdown("**Mục tiêu nghề nghiệp**")
+    summary_cols[1].caption(clean_text(candidate.get("job_category")) or "Chưa có dữ liệu")
+    summary_cols[2].markdown("**Khu vực / kinh nghiệm**")
+    profile_location = location_label(candidate.get("zipcode")) if clean_text(candidate.get("zipcode")) else "Không giới hạn"
+    summary_cols[2].caption(f"{profile_location} · {clean_text(candidate.get('years_experience')) or 'Chưa nêu'}")
     st.markdown("<div class='warning-note'>Mô hình GNN đã huấn luyện vẫn dùng embedding hồ sơ gốc. Phần bạn chỉnh ở đây được áp dụng ở tầng tương thích và xếp hạng lại, giúp minh họa trọng số quan hệ động trong demo.</div>", unsafe_allow_html=True)
 
 with tab_insights:
