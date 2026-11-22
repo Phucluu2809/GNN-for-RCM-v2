@@ -1,0 +1,93 @@
+{
+  "users": 350,
+  "metrics": {
+    "recall@5": 0.017142857142857144,
+    "precision@5": 0.0034285714285714293,
+    "ndcg@5": 0.010475699643381301,
+    "mrr@5": 0.008285714285714285,
+    "fill@5": 1.0,
+    "recall@10": 0.04,
+    "precision@10": 0.004,
+    "ndcg@10": 0.01756233321381928,
+    "mrr@10": 0.011031746031746031,
+    "fill@10": 1.0,
+    "recall@20": 0.056666666666666664,
+    "precision@20": 0.003,
+    "ndcg@20": 0.021742908811627285,
+    "mrr@20": 0.01226254138018844,
+    "fill@20": 1.0,
+    "coverage@5": 0.09646365422396856,
+    "coverage@10": 0.14479371316306483,
+    "coverage@20": 0.20707269155206287
+  },
+  "cohorts": {
+    "cold": {
+      "users": 160,
+      "metrics": {
+        "recall@5": 0.01875,
+        "precision@5": 0.0037500000000000007,
+        "ndcg@5": 0.011829932879464829,
+        "mrr@5": 0.009375,
+        "fill@5": 1.0,
+        "recall@10": 0.04375,
+        "precision@10": 0.004375,
+        "ndcg@10": 0.019880976231611457,
+        "mrr@10": 0.012673611111111111,
+        "fill@10": 1.0,
+        "recall@20": 0.075,
+        "precision@20": 0.0037500000000000007,
+        "ndcg@20": 0.027335376826610545,
+        "mrr@20": 0.014485294117647058,
+        "fill@20": 1.0
+      }
+    },
+    "warm": {
+      "users": 190,
+      "metrics": {
+        "recall@5": 0.015789473684210527,
+        "precision@5": 0.0031578947368421056,
+        "ndcg@5": 0.009335292707732017,
+        "mrr@5": 0.007368421052631579,
+        "fill@5": 1.0,
+        "recall@10": 0.03684210526315789,
+        "precision@10": 0.00368421052631579,
+        "ndcg@10": 0.015609791725152183,
+        "mrr@10": 0.009649122807017543,
+        "fill@10": 1.0,
+        "recall@20": 0.04122807017543859,
+        "precision@20": 0.002368421052631579,
+        "ndcg@20": 0.017033462062167697,
+        "mrr@20": 0.010390749601275917,
+        "fill@20": 1.0
+      }
+    }
+  },
+  "coverage": {
+    "target_pairs": 6196,
+    "eligible_pairs": 370,
+    "eligible_users": 350,
+    "excluded_pairs": {
+      "candidate_unavailable": 4086,
+      "job_unavailable": 1740
+    },
+    "excluded_candidates": {
+      "not_created_before_cutoff": 8612,
+      "missing_create_date": 2788
+    },
+    "excluded_jobs": {
+      "not_created_before_cutoff": 921
+    }
+  },
+  "scoring_seconds": 78.57161860199994,
+  "evaluation": "full_catalog",
+  "max_users": null,
+  "partition": "validation",
+  "model": "sage",
+  "preprocessing_hash": "5e48eb6f8bb093340d1e4863a54848e9e0175d2a86bc5e5315983e5a1cfa2a95",
+  "feature_schema_version": 1,
+  "gate_mode": "history",
+  "checkpoint_epoch": 10,
+  "dataset_hash": "791d8b1668fdab34b474de98dc7eb738c212a21782600ad0977c6a8831d3f4fe",
+  "split_hash": "45aa93298e5516d940e39d1318fd77effdd37ccab685d8dc23c7337a4c446511",
+  "context_policy": "frozen_at_partition_start; test_uses_past_validation_events_without_refit"
+}

@@ -1,0 +1,91 @@
+{
+  "users": 350,
+  "metrics": {
+    "recall@5": 0.08142857142857143,
+    "precision@5": 0.016571428571428577,
+    "ndcg@5": 0.05203586675984986,
+    "mrr@5": 0.04252380952380952,
+    "fill@5": 1.0,
+    "recall@10": 0.1357142857142857,
+    "precision@10": 0.013714285714285712,
+    "ndcg@10": 0.06919679599750751,
+    "mrr@10": 0.049375283446712014,
+    "fill@10": 1.0,
+    "recall@20": 0.20714285714285716,
+    "precision@20": 0.010428571428571414,
+    "ndcg@20": 0.0872738870614359,
+    "mrr@20": 0.05434071792132384,
+    "fill@20": 1.0,
+    "coverage@5": 0.18035363457760314,
+    "coverage@10": 0.2913555992141454,
+    "coverage@20": 0.42809430255402753
+  },
+  "cohorts": {
+    "cold": {
+      "users": 160,
+      "metrics": {
+        "recall@5": 0.09375,
+        "precision@5": 0.018750000000000003,
+        "ndcg@5": 0.06912052584936143,
+        "mrr@5": 0.060833333333333336,
+        "fill@5": 1.0,
+        "recall@10": 0.1625,
+        "precision@10": 0.016250000000000007,
+        "ndcg@10": 0.09096217590878485,
+        "mrr@10": 0.06962301587301586,
+        "fill@10": 1.0,
+        "recall@20": 0.24375,
+        "precision@20": 0.012187500000000007,
+        "ndcg@20": 0.11159772792381162,
+        "mrr@20": 0.07533663575846236,
+        "fill@20": 1.0
+      }
+    },
+    "warm": {
+      "users": 190,
+      "metrics": {
+        "recall@5": 0.07105263157894737,
+        "precision@5": 0.01473684210526316,
+        "ndcg@5": 0.037648785421313787,
+        "mrr@5": 0.027105263157894733,
+        "fill@5": 1.0,
+        "recall@10": 0.11315789473684211,
+        "precision@10": 0.011578947368421057,
+        "ndcg@10": 0.05086805501958979,
+        "mrr@10": 0.03232456140350877,
+        "fill@10": 1.0,
+        "recall@20": 0.1763157894736842,
+        "precision@20": 0.008947368421052636,
+        "ndcg@20": 0.06679065265101429,
+        "mrr@20": 0.03665994500583876,
+        "fill@20": 1.0
+      }
+    }
+  },
+  "model": "content",
+  "partition": "validation",
+  "seed": 42,
+  "coverage": {
+    "target_pairs": 6196,
+    "eligible_pairs": 370,
+    "eligible_users": 350,
+    "excluded_pairs": {
+      "candidate_unavailable": 4086,
+      "job_unavailable": 1740
+    },
+    "excluded_candidates": {
+      "not_created_before_cutoff": 8612,
+      "missing_create_date": 2788
+    },
+    "excluded_jobs": {
+      "not_created_before_cutoff": 921
+    }
+  },
+  "evaluation": "full_catalog",
+  "max_users": null,
+  "preprocessing_hash": "5e48eb6f8bb093340d1e4863a54848e9e0175d2a86bc5e5315983e5a1cfa2a95",
+  "feature_schema_version": 1,
+  "use_llm": true,
+  "dataset_hash": "791d8b1668fdab34b474de98dc7eb738c212a21782600ad0977c6a8831d3f4fe",
+  "split_hash": "45aa93298e5516d940e39d1318fd77effdd37ccab685d8dc23c7337a4c446511"
+}
